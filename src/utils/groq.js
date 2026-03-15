@@ -37,7 +37,7 @@ ${text.substring(0, 3000)}`
       model: 'llama-3.3-70b-versatile', // UPDATED MODEL ID
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
-      max_tokens: 1500,
+      max_tokens: 3500,
     }),
 // ... existing code
   })
