@@ -66,22 +66,21 @@ export default function App() {
       setLoadingAnalysis(false)
     }
   }
-
-  const fetchAllVideos = async (termsArr) => {
-    setLoadingVideos(true)
-    const map = {}
-    for (const term of termsArr) {
-      try {
-        const vids = await searchVideos(term.searchQuery, settings.ytKey, 4)
-        map[term.term] = vids
-        setVideoMap(prev => ({ ...prev, [term.term]: vids }))
-      } catch (e) {
-        map[term.term] = []
-      }
+// Around line 84
+const fetchAllVideos = async (termsArr) => {
+  setLoadingVideos(true)
+  for (const term of termsArr) {
+    try {
+      const vids = await searchVideos(term.searchQuery, settings.ytKey, 4)
+      setVideoMap(prev => ({ ...prev, [term.term]: vids }))
+    } catch (e) {
+      // ADD THIS: Show the actual error to the user
+      showToast(`YouTube Error: ${e.message}`, 'error') 
+      setVideoMap(prev => ({ ...prev, [term.term]: [] }))
     }
-    setLoadingVideos(false)
   }
-
+  setLoadingVideos(false)
+}
   const handleAddToPlaylist = (video, term) => {
     setPlaylist(prev => {
       if (prev.find(p => p.video.id === video.id)) {
