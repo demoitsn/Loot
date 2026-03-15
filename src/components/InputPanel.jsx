@@ -29,7 +29,7 @@ export default function InputPanel({ onAnalyze, loading, hasKeys }) {
 
   const examples = [
     "Machine learning and neural networks",
-    "React hooks and state management",
+    "Kids entertainment video for a road trip",
     "Quantum computing fundamentals",
     "Personal finance and investing",
   ]
