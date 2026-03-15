@@ -32,12 +32,14 @@ ${text.substring(0, 3000)}`
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
+    // ... existing code
     body: JSON.stringify({
-      model: 'llama3-70b-8192',
+      model: 'llama-3.3-70b-versatile', // UPDATED MODEL ID
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
       max_tokens: 1500,
     }),
+// ... existing code
   })
 
   if (!res.ok) {
