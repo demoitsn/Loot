@@ -27,11 +27,24 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+    const handleCreateYT = async () => { // <--- ADD THIS LINE
     if (!accessToken) {
       if (settings.googleClientId) initiateGoogleAuth(settings.googleClientId)
       else { toast('Add your Google Client ID in settings to create YouTube playlists', 'error'); return }
       return
     }
+    setCreating(true)
+    try {
+      const ids = playlist.map(p => p.video.id)
+      const pl = await createYouTubePlaylist(title, `Learning path created by Loot`, ids, accessToken)
+      setYtPlaylist(pl)
+      toast('YouTube playlist created!', 'success')
+    } catch (e) {
+      toast(e.message, 'error')
+    } finally {
+      setCreating(false)
+    }
+  } // <--- Ensure 
     setCreating(true)
     try {
       const ids = playlist.map(p => p.video.id)
