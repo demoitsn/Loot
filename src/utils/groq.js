@@ -1,7 +1,7 @@
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 export async function analyzeContent(text, apiKey) {
-  const prompt = `You are a learning path expert. Analyze the following text and extract All key concepts/terms that someone should learn to understand it fully.
+  const prompt = `You are a learning path expert. Analyze the following text and extract 20-25 key concepts/terms that someone should learn to understand it fully.
 
 For each term:
 - Write a short description (1 sentence)
