@@ -8,6 +8,7 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
   const [dragging, setDragging] = useState(null)
   const [over, setOver] = useState(null)
   const [title, setTitle] = useState('My Loot Learning Playlist')
+  const [copied, setCopied] = useState(false)
 
   const handleDragStart = (e, i) => { setDragging(i); e.dataTransfer.effectAllowed = 'move' }
   const handleDragOver = (e, i) => { e.preventDefault(); setOver(i) }
@@ -17,8 +18,6 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
     setDragging(null); setOver(null)
   }
 
-  const [copied, setCopied] = useState(false)
-
   const copyAsText = () => {
     const text = playlist.map((item, i) =>
       `${i + 1}. [${item.term}] ${item.video.title}\n   ${item.video.channel}\n   ${item.video.url}`
@@ -27,24 +26,14 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
-    const handleCreateYT = async () => { // <--- ADD THIS LINE
+
+  // FIXED: Wrapped this logic in handleCreateYT and added 'async'
+  const handleCreateYT = async () => {
     if (!accessToken) {
       if (settings.googleClientId) initiateGoogleAuth(settings.googleClientId)
       else { toast('Add your Google Client ID in settings to create YouTube playlists', 'error'); return }
       return
     }
-    setCreating(true)
-    try {
-      const ids = playlist.map(p => p.video.id)
-      const pl = await createYouTubePlaylist(title, `Learning path created by Loot`, ids, accessToken)
-      setYtPlaylist(pl)
-      toast('YouTube playlist created!', 'success')
-    } catch (e) {
-      toast(e.message, 'error')
-    } finally {
-      setCreating(false)
-    }
-  } // <--- Ensure 
     setCreating(true)
     try {
       const ids = playlist.map(p => p.video.id)
@@ -79,7 +68,6 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
 
   return (
     <div style={{ maxWidth: 700, margin: '0 auto', padding: '40px 24px' }}>
-      {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
           <div>
@@ -88,46 +76,51 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
               {playlist.length} videos · drag to reorder
             </p>
           </div>
-          <button
-            onClick={copyAsText}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: copied ? 'rgba(110,255,160,0.08)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${copied ? 'rgba(110,255,160,0.2)' : 'rgba(255,255,255,0.08)'}`,
-              borderRadius: 10, padding: '7px 13px',
-              color: copied ? '#6effa0' : 'rgba(245,245,245,0.5)',
-              fontSize: '0.78rem', cursor: 'pointer',
-              fontFamily: 'Syne, sans-serif', transition: 'all 0.2s ease',
-            }}
-          >{copied ? <><CheckIcon size={11} /> Copied!</> : <><Copy size={11} /> Copy as text</>}</button>
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'rgba(255,95,95,0.06)', border: '1px solid rgba(255,95,95,0.15)',
-              borderRadius: 10, padding: '7px 13px',
-              color: 'rgba(255,150,150,0.7)', fontSize: '0.78rem', cursor: 'pointer',
-              fontFamily: 'Syne, sans-serif', transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,95,95,0.12)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,95,95,0.06)' }}
-          >
-            <Trash2 size={11} /> Clear all
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={copyAsText}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: copied ? 'rgba(110,255,160,0.08)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${copied ? 'rgba(110,255,160,0.2)' : 'rgba(255,255,255,0.08)'}`,
+                borderRadius: 10, padding: '7px 13px',
+                color: copied ? '#6effa0' : 'rgba(245,245,245,0.5)',
+                fontSize: '0.78rem', cursor: 'pointer',
+                fontFamily: 'Syne, sans-serif', transition: 'all 0.2s ease',
+              }}
+            >{copied ? <><CheckIcon size={11} /> Copied!</> : <><Copy size={11} /> Copy as text</>}</button>
+
+            {/* FIXED: Added missing button opening tag here */}
+            <button
+              onClick={onClear}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(255,95,95,0.06)', border: '1px solid rgba(255,95,95,0.15)',
+                borderRadius: 10, padding: '7px 13px',
+                color: 'rgba(255,150,150,0.7)', fontSize: '0.78rem', cursor: 'pointer',
+                fontFamily: 'Syne, sans-serif', transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,95,95,0.12)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,95,95,0.06)' }}
+            >
+              <Trash2 size={11} /> Clear all
+            </button>
+          </div>
         </div>
 
-        {/* Title input */}
         <input
           type="text"
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="Playlist title..."
-          style={{ borderRadius: 12, padding: '11px 16px', fontSize: '0.88rem' }}
+          className="glass"
+          style={{ width: '100%', borderRadius: 12, padding: '11px 16px', fontSize: '0.88rem', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: 'white' }}
         />
       </div>
 
-      {/* YouTube Playlist Result */}
       {ytPlaylist && (
         <a
-          href={ytPlaylist.url} target="_blank" rel="noopener"
+          href={ytPlaylist.url} target="_blank" rel="noopener noreferrer"
           style={{
             display: 'flex', alignItems: 'center', gap: 12,
             background: 'rgba(110,255,160,0.07)', border: '1px solid rgba(110,255,160,0.2)',
@@ -146,7 +139,6 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
         </a>
       )}
 
-      {/* Video list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
         {playlist.map((item, i) => (
           <div
@@ -165,17 +157,16 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
               borderColor: over === i ? 'rgba(232,213,163,0.2)' : undefined,
               transition: 'all 0.15s ease',
               cursor: 'grab',
-              animation: `fadeUp 0.3s ease ${i * 0.04}s both`,
             }}
           >
-            <GripVertical size={14} color="rgba(245,245,245,0.2)" style={{ flexShrink: 0, cursor: 'grab' }} />
+            <GripVertical size={14} color="rgba(245,245,245,0.2)" style={{ flexShrink: 0 }} />
             <div style={{
               flexShrink: 0, fontFamily: 'DM Mono, monospace', fontSize: '0.72rem',
               color: 'rgba(245,245,245,0.3)', width: 20, textAlign: 'center',
             }}>{i + 1}</div>
             <img src={item.video.thumbnail} alt="" style={{ width: 68, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: '0.83rem', fontWeight: 500, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              <p style={{ fontSize: '0.83rem', fontWeight: 500, lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {item.video.title}
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
@@ -185,12 +176,11 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
             </div>
             <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
               <a
-                href={item.video.url} target="_blank" rel="noopener"
+                href={item.video.url} target="_blank" rel="noopener noreferrer"
                 style={{
                   background: 'rgba(255,0,0,0.12)', border: '1px solid rgba(255,0,0,0.2)',
                   borderRadius: 8, padding: '6px 8px', display: 'flex', alignItems: 'center', gap: 4,
                   color: 'rgba(255,100,100,0.8)', fontSize: '0.72rem', textDecoration: 'none',
-                  fontFamily: 'DM Mono, monospace',
                 }}
               ><Play size={10} fill="currentColor" /></a>
               <button
@@ -205,11 +195,7 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
         ))}
       </div>
 
-      {/* Export to YouTube */}
-      <div
-        className="glass"
-        style={{ borderRadius: 18, padding: '20px 22px', textAlign: 'center' }}
-      >
+      <div className="glass" style={{ borderRadius: 18, padding: '20px 22px', textAlign: 'center' }}>
         <Youtube size={20} color="rgba(255,100,100,0.7)" style={{ margin: '0 auto 8px' }} />
         <h4 style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 4 }}>Export to YouTube</h4>
         <p style={{ color: 'rgba(245,245,245,0.35)', fontSize: '0.78rem', marginBottom: 16, lineHeight: 1.5 }}>
@@ -243,4 +229,4 @@ export default function PlaylistView({ playlist, onRemove, onReorder, onClear, s
       </div>
     </div>
   )
-}
+      }
