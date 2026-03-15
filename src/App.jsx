@@ -67,20 +67,35 @@ export default function App() {
     }
   }
 // Around line 84
-const fetchAllVideos = async (termsArr) => {
-  setLoadingVideos(true)
-  for (const term of termsArr) {
-    try {
-      const vids = await searchVideos(term.searchQuery, settings.ytKey, 4)
-      setVideoMap(prev => ({ ...prev, [term.term]: vids }))
-    } catch (e) {
-      // ADD THIS: Show the actual error to the user
-      showToast(`YouTube Error: ${e.message}`, 'error') 
-      setVideoMap(prev => ({ ...prev, [term.term]: [] }))
+// App.jsx - Updated fetchAllVideos function
+  const fetchAllVideos = async (termsArr) => {
+    setLoadingVideos(true)
+    let errorShown = false // Flag to track if we've already shown an error
+
+    for (const term of termsArr) {
+      try {
+        const vids = await searchVideos(term.searchQuery, settings.ytKey, 4)
+        setVideoMap(prev => ({ ...prev, [term.term]: vids }))
+      } catch (e) {
+        // Set the term to an empty list so the UI doesn't spin forever
+        setVideoMap(prev => ({ ...prev, [term.term]: [] }))
+
+        // Only show the toast for the VERY FIRST error in this batch
+        if (!errorShown) {
+          showToast(`YouTube Error: ${e.message}`, 'error')
+          errorShown = true
+        }
+
+        // CRITICAL: If the error is about "quota", stop the loop. 
+        // There's no point in trying the other 19 topics if the key is empty.
+        if (e.message.toLowerCase().includes('quota')) {
+          console.error("Quota exceeded, stopping further searches.")
+          break 
+        }
+      }
     }
+    setLoadingVideos(false)
   }
-  setLoadingVideos(false)
-}
   const handleAddToPlaylist = (video, term) => {
     setPlaylist(prev => {
       if (prev.find(p => p.video.id === video.id)) {
